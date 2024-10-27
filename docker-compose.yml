@@ -1,0 +1,71 @@
+version: '3.8'
+
+networks:
+  mongo-compose-network:
+    driver: bridge
+
+volumes:
+  mongodb_data_container:
+
+services:
+  mongo:
+    image: mongo
+    restart: always
+    container_name: MY_MONGODB
+    environment:
+      TZ: America/Sao_Paulo
+      MONGO_INITDB_ROOT_USERNAME: ${USERNAME_MONGO:-userroot}
+      MONGO_INITDB_ROOT_PASSWORD: ${USERNAME_MONGO:-passexample}
+      MONG_INITDB_DATABASE: ${DATABASE_MONGO:-schema_nestjs}
+    ports:
+      - 27017:27017
+    expose:
+      - "27017:27017"
+    volumes:
+      - ./data/db:/data/db
+    networks:
+      - mongo-compose-network
+
+  mymongoexpress:
+    image: mongo-express
+    restart: always
+    container_name: MY_MONGO_EXPRESS
+    ports:
+      - 8081:8081
+    expose:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_BASICAUTH_USERNAME: ${USERNAME_MONGO:-userroot}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${PASSWORD_MONGO-passexample}
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${USERNAME_MONGO:-userroot}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${PASSWORD_MONGO-passexample}
+    depends_on:
+      - mongo
+    links:
+      - mongo
+    networks:
+      - mongo-compose-network
+
+  # mynodejs:
+  #   container_name: MY_NODEJS
+  #   build:
+  #     context: .
+  #   command: npm start
+  #   env_file:
+  #     - ./nodejs.env
+  #   environment:
+  #     ASPNETCORE_URLS: http://+:3000
+  #   ports:
+  #     - 3000:3000
+  #   volumes:
+  #     - .:/home/app/webapp
+  #     - /home/app/webapp/node_modules
+  #   depends_on:
+  #     - mymongodb
+  #   links:
+  #     - mymongodb
+  #   networks:
+  #     - mongo-compose-network
+
